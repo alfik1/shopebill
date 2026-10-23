@@ -3,12 +3,14 @@ import {
   createBill,
   scanItem,
   updateItemQty,
+  updateItemDiscount,
   payBill,
   cancelBill,
   downloadReceipt,
+  searchCustomers,
 } from '../../controllers/billController';
 
-const emptyCustomer = { name: '', phone: '', discount: '0' };
+const emptyCustomer = { name: '', phone: '' };
 
 // QR can hold plain text or JSON with a sku, same as Add Product
 const normalizeCode = (text) => {
@@ -35,6 +37,96 @@ export default function Billing() {
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+
+  // ========================================================
+  // CUSTOMER SEARCH
+  // ========================================================
+
+  const [customerQuery, setCustomerQuery] = useState('');
+  const [customerResults, setCustomerResults] = useState([]);
+  const [searchingCustomers, setSearchingCustomers] = useState(false);
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+
+  useEffect(() => {
+    const query = customerQuery.trim();
+
+    if (!query) {
+      setCustomerResults([]);
+      setSearchingCustomers(false);
+      return undefined;
+    }
+
+    setSearchingCustomers(true);
+
+    const timer = setTimeout(async () => {
+      console.log('[Billing] CUSTOMER SEARCH:', query);
+
+      try {
+        const results = await searchCustomers(query);
+
+        setCustomerResults(results);
+      } catch (err) {
+        console.error('[Billing] CUSTOMER SEARCH ERROR:', err);
+
+        setCustomerResults([]);
+      } finally {
+        setSearchingCustomers(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [customerQuery]);
+
+  const handlePickCustomer = (picked) => {
+    console.log('[Billing] Customer picked:', picked);
+
+    setCustomer({ ...customer, name: picked.name, phone: picked.phone });
+    setCustomerQuery('');
+    setCustomerResults([]);
+    setShowCustomerDropdown(false);
+  };
+
+  // ========================================================
+  // ITEM DISCOUNT (per line item)
+  // ========================================================
+
+  const [itemDiscountDrafts, setItemDiscountDrafts] = useState({});
+
+  const getDiscountDraft = (item) =>
+    itemDiscountDrafts[item.id] !== undefined
+      ? itemDiscountDrafts[item.id]
+      : String(item.discount ?? 0);
+
+  const setDiscountDraft = (itemId, value) => {
+    setItemDiscountDrafts((prev) => ({ ...prev, [itemId]: value }));
+  };
+
+  const saveItemDiscount = async (item) => {
+    const value = getDiscountDraft(item);
+
+    console.log('[Billing] SAVE ITEM DISCOUNT', item.id, value);
+
+    setError('');
+    setBusy(true);
+
+    try {
+      const updated = await updateItemDiscount(bill.id, item.id, value, item.qty);
+
+      setBill(updated);
+
+      setItemDiscountDrafts((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
+    } catch (err) {
+      console.error('[Billing] SAVE ITEM DISCOUNT ERROR:', err);
+
+      setError(err?.message || 'Failed to update discount');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   // Keep the amount in sync with the bill total
   useEffect(() => {
@@ -84,6 +176,10 @@ export default function Billing() {
     setReference('');
     setAmount('');
     setError('');
+    setCustomerQuery('');
+    setCustomerResults([]);
+    setShowCustomerDropdown(false);
+    setItemDiscountDrafts({});
   };
 
   const focusScan = () => {
@@ -110,7 +206,7 @@ export default function Billing() {
       const created = await createBill({
         customerName: customer.name,
         customerPhone: customer.phone,
-        discount: customer.discount,
+        discount: '0',
       });
 
       console.log('[Billing] Draft bill created:', created);
@@ -325,41 +421,92 @@ export default function Billing() {
       {/* ---------- START BILL ---------- */}
 
       {!bill && !paidBill && (
-        <form className="form-panel" onSubmit={handleStart}>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Customer Name</label>
+        <>
+          <div className="form-panel" style={{ marginBottom: 16, position: 'relative' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label>Search Existing Customer</label>
               <input
                 className="input"
-                value={customer.name}
-                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                required
+                value={customerQuery}
+                onChange={(e) => {
+                  setCustomerQuery(e.target.value);
+                  setShowCustomerDropdown(true);
+                }}
+                onFocus={() => setShowCustomerDropdown(true)}
+                onBlur={() => setTimeout(() => setShowCustomerDropdown(false), 150)}
+                placeholder="Search by customer name or phone"
               />
-            </div>
-            <div className="form-group">
-              <label>Customer Phone</label>
-              <input
-                className="input"
-                value={customer.phone}
-                onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>Discount (₹)</label>
-              <input
-                className="input"
-                type="number"
-                min="0"
-                step="0.01"
-                value={customer.discount}
-                onChange={(e) => setCustomer({ ...customer, discount: e.target.value })}
-              />
+
+              {showCustomerDropdown && customerQuery.trim() && (
+                <div
+                  className="card"
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    zIndex: 10,
+                    marginTop: 6,
+                    padding: 8,
+                    maxHeight: 220,
+                    overflowY: 'auto',
+                  }}
+                >
+                  {searchingCustomers && (
+                    <div style={{ padding: 8, fontSize: 13, color: '#8A8A94' }}>Searching...</div>
+                  )}
+
+                  {!searchingCustomers && customerResults.length === 0 && (
+                    <div style={{ padding: 8, fontSize: 13, color: '#8A8A94' }}>No matching customers</div>
+                  )}
+
+                  {!searchingCustomers &&
+                    customerResults.map((c, index) => (
+                      <div
+                        key={`${c.name}-${c.phone}-${index}`}
+                        onClick={() => handlePickCustomer(c)}
+                        style={{
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                          cursor: 'pointer',
+                          fontSize: 13,
+                        }}
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        <div style={{ fontWeight: 700 }}>{c.name || '(no name)'}</div>
+                        {c.phone && <div style={{ color: '#8A8A94', fontSize: 12 }}>{c.phone}</div>}
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
           </div>
-          <button className="btn btn-primary" style={{ width: 'auto' }} type="submit" disabled={busy}>
-            Start Bill
-          </button>
-        </form>
+
+          <form className="form-panel" onSubmit={handleStart}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Customer Name</label>
+                <input
+                  className="input"
+                  value={customer.name}
+                  onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Customer Phone</label>
+                <input
+                  className="input"
+                  value={customer.phone}
+                  onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                />
+              </div>
+            </div>
+            <button className="btn btn-primary" style={{ width: 'auto' }} type="submit" disabled={busy}>
+              Start Bill
+            </button>
+          </form>
+        </>
       )}
 
       {/* ---------- OPEN BILL ---------- */}
@@ -422,13 +569,14 @@ export default function Billing() {
                     <th>SKU</th>
                     <th>Price</th>
                     <th>Qty</th>
+                    <th>Discount</th>
                     <th>Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bill.items.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ color: '#777' }}>
+                      <td colSpan={6} style={{ color: '#777' }}>
                         No items yet. Scan a product QR.
                       </td>
                     </tr>
@@ -458,6 +606,29 @@ export default function Billing() {
                             onClick={() => changeQty(item, 1)}
                           >
                             +
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <input
+                            className="input"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={getDiscountDraft(item)}
+                            onChange={(e) => setDiscountDraft(item.id, e.target.value)}
+                            style={{ width: 80, fontSize: 12, padding: '6px 8px' }}
+                            disabled={busy}
+                          />
+                          <button
+                            className="btn btn-outline"
+                            style={{ fontSize: 12, padding: '4px 10px' }}
+                            type="button"
+                            disabled={busy}
+                            onClick={() => saveItemDiscount(item)}
+                          >
+                            Save
                           </button>
                         </div>
                       </td>

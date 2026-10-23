@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getProducts, deleteProduct } from '../../controllers/productController';
+import { getCategories } from '../../controllers/categoryController';
 import ProductCard from '../components/ProductCard';
-
-const categories = ['All', 'Shirt', 'T-Shirt', 'Pant', 'Underwear'];
 
 export default function Products() {
 
   const [products, setProducts] = useState([]);
+
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All' }]);
 
   const [activeCategory, setActiveCategory] = useState('All');
 
@@ -47,6 +48,38 @@ export default function Products() {
 
 
   // ========================================================
+  // LOAD CATEGORIES
+  // ========================================================
+
+  const loadCategories = async () => {
+
+    console.log('########################################');
+    console.log('[Products] LOAD CATEGORIES START');
+
+    try {
+
+      const data = await getCategories();
+
+      console.log('[Products] Categories loaded:', data);
+
+      setCategories([{ id: 'all', name: 'All' }, ...data]);
+
+    } catch (error) {
+
+      console.error('[Products] LOAD CATEGORIES ERROR:', error);
+
+      setCategories([{ id: 'all', name: 'All' }]);
+
+    } finally {
+
+      console.log('[Products] LOAD CATEGORIES END');
+
+      console.log('########################################');
+    }
+  };
+
+
+  // ========================================================
   // INITIAL LOAD
   // ========================================================
 
@@ -55,6 +88,7 @@ export default function Products() {
     console.log('[Products] Component mounted');
 
     loadProducts();
+    loadCategories();
 
   }, []);
 
@@ -122,14 +156,14 @@ export default function Products() {
         <div className="category-tabs">
           {categories.map((c) => (
             <button
-              key={c}
-              className={`tab${activeCategory === c ? ' active' : ''}`}
+              key={c.id}
+              className={`tab${activeCategory === c.name ? ' active' : ''}`}
               onClick={() => {
-                console.log('[Products] Tab clicked:', c);
-                setActiveCategory(c);
+                console.log('[Products] Tab clicked:', c.name);
+                setActiveCategory(c.name);
               }}
             >
-              {c}
+              {c.name}
             </button>
           ))}
         </div>
@@ -140,7 +174,12 @@ export default function Products() {
 
       <div className="product-grid">
         {filtered.map((p) => (
-          <ProductCard key={p.id} product={p} onDelete={handleDelete} />
+          <ProductCard
+            key={p.id}
+            product={p}
+            onDelete={handleDelete}
+            onUpdated={loadProducts}
+          />
         ))}
       </div>
     </div>

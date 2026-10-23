@@ -14,8 +14,7 @@ export async function login(email, password) {
   const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
     method:  'POST',
     headers: {
-      'Content-Type':               'application/json',
-      'ngrok-skip-browser-warning': 'true',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password }),
   });
@@ -64,8 +63,7 @@ export async function refreshAccessToken() {
   const response = await fetch(API_ENDPOINTS.AUTH.REFRESH, {
     method:  'POST',
     headers: {
-      'Content-Type':               'application/json',
-      'ngrok-skip-browser-warning': 'true',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ refresh }),
   });

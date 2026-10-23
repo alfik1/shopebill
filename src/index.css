@@ -267,12 +267,12 @@ input, select { font-family: inherit; }
 
 .bar-chart {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 14px;
   height: 180px;
 }
 
-.bar-col { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+.bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 8px; flex: 1; }
 .bar { width: 100%; border-radius: 6px 6px 0 0; background: var(--purple-card); }
 .bar-col span { font-size: 11px; color: var(--muted); }
 

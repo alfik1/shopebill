@@ -2,11 +2,13 @@
 
 import { API_ENDPOINTS } from '../constants/apiConstants';
 import { authFetch } from '../services/apiService';
+import { getProducts } from './productController';
 
 import {
   summaryFromApi,
   weeklySalesFromApi,
   topProductsFromApi,
+  enrichTopProductsWithCatalog,
 } from '../models/dashboardModel';
 
 
@@ -118,6 +120,7 @@ export const getWeeklySales = async () => {
 // ==========================================================
 // TOP PRODUCTS
 // GET /api/dashboard/top-products/
+// Enriched with category/stock/price from the product catalog
 // ==========================================================
 
 export const getTopProducts = async () => {
@@ -127,5 +130,21 @@ export const getTopProducts = async () => {
     API_ENDPOINTS.DASHBOARD.TOP_PRODUCTS
   );
 
-  return topProductsFromApi(data);
+  const topProducts = topProductsFromApi(data);
+
+  try {
+
+    const catalogProducts = await getProducts();
+
+    return enrichTopProductsWithCatalog(topProducts, catalogProducts);
+
+  } catch (error) {
+
+    console.warn(
+      '[DashboardController] Catalog fetch for enrichment failed, showing derived prices only:',
+      error
+    );
+
+    return topProducts;
+  }
 };

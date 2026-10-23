@@ -283,42 +283,37 @@ export const weeklySalesFromApi = (raw) => {
 
 // ==========================================================
 // TOP PRODUCTS
+// API shape: { product, product_name, qty_sold, revenue }
+// No category/stock/price here — filled in later from the
+// full product catalog via enrichTopProductsWithCatalog()
 // ==========================================================
 
 export const topProductFromApi = (raw) => {
 
-  const category = raw?.category;
+  const qtySold = toNumber(raw?.qty_sold ?? raw?.quantity_sold ?? raw?.qty, 0);
 
-  const categoryName =
-    category && typeof category === 'object'
-      ? category.name || ''
-      : raw?.category_name ??
-        (category === undefined || category === null
-          ? ''
-          : String(category));
+  const revenue = toNumber(raw?.revenue ?? raw?.total_revenue ?? raw?.total, 0);
+
+  // Unit price derived from revenue / qty as a fallback when the
+  // catalog doesn't have this product (overwritten by catalog price below)
+
+  const derivedPrice = qtySold > 0 ? round2(revenue / qtySold) : 0;
 
   return {
 
-    ...raw,
+    id: raw?.product ?? raw?.id ?? raw?.product_id ?? null,
 
-    id:
-      raw?.id ??
-      raw?.product_id ??
-      raw?.sku ??
-      null,
+    name: raw?.product_name ?? raw?.name ?? '',
 
-    name: raw?.name ?? raw?.product_name ?? '',
+    category: '',
 
-    category: categoryName,
+    stock: 0,
 
-    stock: toNumber(
-      raw?.stock_qty ??
-        raw?.stock ??
-        raw?.quantity,
-      0
-    ),
+    price: derivedPrice,
 
-    price: toNumber(raw?.price, 0),
+    qtySold,
+
+    revenue,
   };
 };
 
@@ -373,4 +368,48 @@ export const topProductsFromApi = (raw) => {
   );
 
   return products;
+};
+
+
+// Fill in category/stock/price from the full product catalog,
+// matching by id. Falls back to the derived price if no match.
+
+export const enrichTopProductsWithCatalog = (topProducts, catalogProducts) => {
+
+  console.log(
+    '[DashboardModel] enrichTopProductsWithCatalog input:',
+    { topProducts, catalogProducts }
+  );
+
+  const catalogById = new Map(
+    (catalogProducts || []).map((p) => [String(p.id), p])
+  );
+
+  const enriched = topProducts.map((tp) => {
+
+    const match = catalogById.get(String(tp.id));
+
+    if (!match) {
+      return tp;
+    }
+
+    const category =
+      match.category && typeof match.category === 'object'
+        ? match.category.name || ''
+        : match.category ?? '';
+
+    return {
+      ...tp,
+      category,
+      stock: toNumber(match.stock_qty ?? match.stock ?? match.quantity, 0),
+      price: toNumber(match.price, tp.price),
+    };
+  });
+
+  console.log(
+    '[DashboardModel] enrichTopProductsWithCatalog output:',
+    enriched
+  );
+
+  return enriched;
 };

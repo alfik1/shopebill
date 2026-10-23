@@ -229,6 +229,33 @@ export const updateItemQty = async (billId, itemId, qty) => {
 
 
 // ==========================================================
+// UPDATE ITEM DISCOUNT
+// PATCH /api/bills/{id}/items/{itemId}/
+// This endpoint's serializer requires qty in the body even
+// when only discount is changing, so the item's current qty
+// is sent alongside it.
+// Returns the refreshed bill (items + totals)
+// ==========================================================
+
+export const updateItemDiscount = async (billId, itemId, discount, qty) => {
+
+  await request(
+    'UPDATE ITEM DISCOUNT',
+    API_ENDPOINTS.BILLS.ITEMS.DETAIL(billId, itemId),
+    {
+      method: 'PATCH',
+      payload: {
+        qty: Number(qty),
+        discount: Number(discount || 0).toFixed(2),
+      },
+    }
+  );
+
+  return getBill(billId);
+};
+
+
+// ==========================================================
 // PAY BILL
 // POST /api/bills/{id}/pay/
 // Returns the refreshed bill, or null if refresh failed
@@ -363,4 +390,67 @@ export const downloadReceipt = async (billId) => {
 
     console.log('==============================================');
   }
+};
+
+
+// ==========================================================
+// SEARCH EXISTING CUSTOMERS
+// GET /api/bills/?search={query}
+// Extracts unique { name, phone } pairs from matching bills
+// ==========================================================
+
+export const searchCustomers = async (query) => {
+
+  const text = String(query || '').trim();
+
+  if (!text) {
+    return [];
+  }
+
+  const url = `${API_ENDPOINTS.BILLS.LIST}?search=${encodeURIComponent(text)}`;
+
+  const data = await request(
+    'SEARCH CUSTOMERS',
+    url
+  );
+
+  const list = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.results)
+      ? data.results
+      : [];
+
+  const bills = list.map(billFromApi);
+
+  const seen = new Set();
+
+  const customers = [];
+
+  bills.forEach((b) => {
+
+    const name = b.customerName || '';
+
+    const phone = b.customerPhone || '';
+
+    if (!name && !phone) {
+      return;
+    }
+
+    const key = `${name.toLowerCase()}|${phone}`;
+
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+
+    customers.push({ name, phone });
+  });
+
+  console.log(
+    '[BillController] SEARCH CUSTOMERS result:',
+    customers
+  );
+
+  return customers;
 };

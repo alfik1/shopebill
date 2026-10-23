@@ -16,7 +16,6 @@ export async function authFetch(url, options = {}) {
   // Build headers with current access token
   const headers = {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
     ...options.headers,
     Authorization: `Bearer ${tokenService.getAccessToken()}`,
   };
