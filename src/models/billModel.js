@@ -217,15 +217,46 @@ export const toQtyPayload = (qty) => {
 
 
 // POST /api/bills/{id}/pay/
+//
+// Regular payment:
+// { method: 'cash' | 'upi', amount: '100.00', reference: '' }
+//
+// Mixed payment:
+// { method: 'mixed', payments: [{ method: 'cash', amount: '300.00' }, { method: 'upi', amount: '700.00' }] }
 
 export const toPayPayload = ({
   method = 'cash',
   amount = 0,
   reference = '',
+  mixedPayments = null,
 } = {}) => {
 
+  const normalizedMethod = String(method).toLowerCase();
+
+  if (normalizedMethod === 'mixed') {
+
+    const payments = (mixedPayments || [])
+      .filter((p) => toNumber(p.amount, 0) > 0)
+      .map((p) => ({
+        method: String(p.method).toLowerCase(),
+        amount: toNumber(p.amount, 0).toFixed(2),
+      }));
+
+    const payload = {
+      method: 'mixed',
+      payments,
+    };
+
+    console.log(
+      '[BillModel] toPayPayload (mixed):',
+      payload
+    );
+
+    return payload;
+  }
+
   const payload = {
-    method: String(method).toLowerCase(),
+    method: normalizedMethod,
     amount: toNumber(amount, 0).toFixed(2),
     reference: String(reference || '').trim(),
   };

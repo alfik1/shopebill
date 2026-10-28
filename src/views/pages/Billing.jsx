@@ -35,6 +35,8 @@ export default function Billing() {
   const [paymentType, setPaymentType] = useState('Cash');
   const [reference, setReference] = useState('');
   const [amount, setAmount] = useState('');
+  const [mixedCashAmount, setMixedCashAmount] = useState('');
+  const [mixedUpiAmount, setMixedUpiAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -135,6 +137,14 @@ export default function Billing() {
     }
   }, [bill?.total]);
 
+  // Keep mixed cash/UPI split in sync with the bill total (default: all in cash)
+  useEffect(() => {
+    if (bill) {
+      setMixedCashAmount(String(bill.total));
+      setMixedUpiAmount('0');
+    }
+  }, [bill?.total]);
+
   // USB QR scanner: it types like a keyboard. While a bill is open, if nothing
   // is focused when the scan starts, send the typing to the scan field
   const hasBill = Boolean(bill);
@@ -175,6 +185,8 @@ export default function Billing() {
     setPaymentType('Cash');
     setReference('');
     setAmount('');
+    setMixedCashAmount('');
+    setMixedUpiAmount('');
     setError('');
     setCustomerQuery('');
     setCustomerResults([]);
@@ -304,6 +316,16 @@ export default function Billing() {
       return;
     }
 
+    if (paymentType === 'Mixed') {
+      const cashAmt = Number(mixedCashAmount) || 0;
+      const upiAmt = Number(mixedUpiAmount) || 0;
+
+      if (cashAmt <= 0 && upiAmt <= 0) {
+        setError('Enter at least one split amount for mixed payment');
+        return;
+      }
+    }
+
     setBusy(true);
 
     try {
@@ -311,6 +333,13 @@ export default function Billing() {
         method: paymentType,
         amount,
         reference,
+        mixedPayments:
+          paymentType === 'Mixed'
+            ? [
+                { method: 'cash', amount: mixedCashAmount },
+                { method: 'upi', amount: mixedUpiAmount },
+              ]
+            : null,
       });
 
       console.log('[Billing] Bill paid:', paid);
@@ -648,17 +677,19 @@ export default function Billing() {
 
           <form className="form-panel" onSubmit={handlePay}>
             <div className="form-row">
-              <div className="form-group">
-                <label>Amount (₹)</label>
-                <input
-                  className="input"
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                />
-              </div>
+              {paymentType !== 'Mixed' && (
+                <div className="form-group">
+                  <label>Amount (₹)</label>
+                  <input
+                    className="input"
+                    type="number"
+                    step="0.01"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <div className="form-group">
                 <label>Payment Type</label>
                 <div className="radio-row">
@@ -682,6 +713,16 @@ export default function Billing() {
                     />
                     UPI
                   </label>
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="paymentType"
+                      value="Mixed"
+                      checked={paymentType === 'Mixed'}
+                      onChange={(e) => setPaymentType(e.target.value)}
+                    />
+                    Mixed
+                  </label>
                 </div>
               </div>
               {paymentType === 'UPI' && (
@@ -696,6 +737,50 @@ export default function Billing() {
                 </div>
               )}
             </div>
+
+            {paymentType === 'Mixed' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Cash Amount (₹)</label>
+                  <input
+                    className="input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={mixedCashAmount}
+                    onChange={(e) => setMixedCashAmount(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>UPI Amount (₹)</label>
+                  <input
+                    className="input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={mixedUpiAmount}
+                    onChange={(e) => setMixedUpiAmount(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Combined Total</label>
+                  <div
+                    className="input"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      background: '#F4F6FB',
+                      color: (Number(mixedCashAmount) || 0) + (Number(mixedUpiAmount) || 0) === Number(bill.total)
+                        ? undefined
+                        : '#E74C3C',
+                    }}
+                  >
+                    ₹{((Number(mixedCashAmount) || 0) + (Number(mixedUpiAmount) || 0)).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <button className="btn btn-primary" style={{ width: 'auto' }} type="submit" disabled={busy}>
               Pay Bill
             </button>

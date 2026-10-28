@@ -94,10 +94,32 @@ export default function Products() {
 
 
   // ========================================================
+  // STOCK HELPERS
+  // ========================================================
+
+  const getStock = (p) => Number(p.stock ?? p.stock_qty) || 0;
+
+  // Total stock for a tab: "All" = every product, otherwise that category
+  const getTotalStock = (categoryName) => {
+
+    const list =
+      categoryName === 'All'
+        ? products
+        : products.filter(
+            (p) =>
+              String(p.category || '').toLowerCase() ===
+              categoryName.toLowerCase()
+          );
+
+    return list.reduce((sum, p) => sum + getStock(p), 0);
+  };
+
+
+  // ========================================================
   // FILTER
   // ========================================================
 
-  const filtered =
+  const categoryFiltered =
     activeCategory === 'All'
       ? products
       : products.filter(
@@ -105,6 +127,12 @@ export default function Products() {
             String(p.category || '').toLowerCase() ===
             activeCategory.toLowerCase()
         );
+
+  // Products with stock 0 go to the end (original order kept otherwise)
+  const filtered = [
+    ...categoryFiltered.filter((p) => getStock(p) > 0),
+    ...categoryFiltered.filter((p) => getStock(p) <= 0),
+  ];
 
   console.log(
     '[Products] Active category:',
@@ -163,7 +191,7 @@ export default function Products() {
                 setActiveCategory(c.name);
               }}
             >
-              {c.name}
+              {c.name} ({getTotalStock(c.name)})
             </button>
           ))}
         </div>

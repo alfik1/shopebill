@@ -6,7 +6,7 @@ import { useAuth }             from '../../context/AuthContext';
 import { getMyProfile, updateMyProfile } from '../../controllers/profileController';
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate         = useNavigate();
 
   const [name,     setName]     = useState(user?.name || '');
@@ -27,6 +27,10 @@ export default function Profile() {
         setProfile(data);
         setName(data.name   || user?.name || '');
         setPhone(data.phone || '');
+        // keep topbar/context in sync with the server value
+        if (data.name && data.name !== user?.name) {
+          updateUser({ name: data.name });
+        }
       })
       .catch((err) => {
         console.error('[Profile] useEffect() → fetch error:', err.message);
@@ -52,6 +56,8 @@ export default function Profile() {
       setProfile(updated);
       setName(updated.name   || name);
       setPhone(updated.phone || phone);
+      // update topbar name (context + storage)
+      updateUser({ name: updated.name || name });
       setSuccess('Profile updated successfully');
     } catch (err) {
       console.error('[Profile] handleSave() → update error:', err.message);
