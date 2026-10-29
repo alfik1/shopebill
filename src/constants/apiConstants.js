@@ -1,7 +1,9 @@
-
 // src/constants/apiConstants.js
 
-export const BASE_URL = 'http://34.171.55.230';
+// In production (Vercel), use relative URLs so requests go to
+// https://shopebill.vercel.app/api/... and Vercel forwards them to the server.
+// In local development, call the server directly.
+export const BASE_URL = import.meta.env.DEV ? 'http://34.171.55.230' : '';
 
 export const API_ENDPOINTS = {
   AUTH: {
