@@ -1,7 +1,9 @@
 
-export const BASE_URL = import.meta.env.DEV
+const BASE_URL = import.meta.env.DEV
   ? 'http://34.171.55.230'
   : '';
+
+export { BASE_URL };
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -20,7 +22,7 @@ export const API_ENDPOINTS = {
     LIST: `${BASE_URL}/api/products/`,
     DETAIL: (id) => `${BASE_URL}/api/products/${id}/`,
     BY_BARCODE: (barcode) =>
-      `${BASE_URL}/api/products/barcode/${barcode}/`,
+      `${BASE_URL}/api/products/barcode/${encodeURIComponent(barcode)}/`,
   },
 
   EMPLOYEES: {
@@ -36,8 +38,12 @@ export const API_ENDPOINTS = {
     RECEIPT: (id) => `${BASE_URL}/api/bills/${id}/receipt.pdf`,
 
     ITEMS: {
-      LIST: (billId) => `${BASE_URL}/api/bills/${billId}/items/`,
-      SCAN: (billId) => `${BASE_URL}/api/bills/${billId}/items/scan/`,
+      LIST: (billId) =>
+        `${BASE_URL}/api/bills/${billId}/items/`,
+
+      SCAN: (billId) =>
+        `${BASE_URL}/api/bills/${billId}/items/scan/`,
+
       DETAIL: (billId, itemId) =>
         `${BASE_URL}/api/bills/${billId}/items/${itemId}/`,
     },
@@ -48,4 +54,10 @@ export const API_ENDPOINTS = {
     WEEKLY_SALES: `${BASE_URL}/api/dashboard/weekly-sales/`,
     TOP_PRODUCTS: `${BASE_URL}/api/dashboard/top-products/`,
   },
+};
+
+export const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'shopbill_access_token',
+  REFRESH_TOKEN: 'shopbill_refresh_token',
+  USER: 'shopbill_auth',
 };
