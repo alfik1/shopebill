@@ -3,6 +3,9 @@
   "version": 2,
   "routes": [
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "http://34.171.55.230/api/$1"
     },
