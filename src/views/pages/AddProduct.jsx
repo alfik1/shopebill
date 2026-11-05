@@ -195,10 +195,13 @@ const created = await addProduct({
       console.log('[AddProduct] Product created:', created);
 
       setSuccess('Product added successfully');
-      setForm({
-        ...emptyForm,
-        categoryId: categories[0] ? String(categories[0].id) : '',
-      });
+
+      // Keep the last entered values (name, category, size, price, stock).
+      // Only the SKU / QR field is cleared, ready for the next scan.
+      setForm((prev) => ({ ...prev, sku: '' }));
+
+      skuRef.current?.focus();
+
       setTimeout(() => setSuccess(''), 2500);
     } catch (err) {
       console.error('[AddProduct] SUBMIT ERROR:', err);

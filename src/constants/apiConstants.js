@@ -20,6 +20,8 @@ export const API_ENDPOINTS = {
 
   PRODUCTS: {
     LIST: `${BASE_URL}/api/products/`,
+     SEARCH: (search) =>
+      `${BASE_URL}/api/products/?search=${encodeURIComponent(search)}`,
     DETAIL: (id) => `${BASE_URL}/api/products/${id}/`,
     BY_BARCODE: (barcode) =>
       `${BASE_URL}/api/products/barcode/${encodeURIComponent(barcode)}/`,
