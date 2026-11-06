@@ -10,6 +10,7 @@ import Billing from './views/pages/Billing';
 import Employees from './views/pages/Employees';
 import History from './views/pages/History';
 import Collection from './views/pages/Collection';
+import PaymentCollection from './views/pages/PaymentCollection';
 import Profile from './views/pages/Profile';
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="employees" element={<Employees />} />
           <Route path="history" element={<History />} />
           <Route path="collection" element={<Collection />} />
+          <Route path="payment-collection" element={<PaymentCollection />} />
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>

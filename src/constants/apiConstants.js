@@ -56,7 +56,14 @@ export const API_ENDPOINTS = {
     WEEKLY_SALES: `${BASE_URL}/api/dashboard/weekly-sales/`,
     TOP_PRODUCTS: `${BASE_URL}/api/dashboard/top-products/`,
   },
+
+    COLLECTION: {
+    LIST: `${BASE_URL}/api/mobile/collection/`,
+  },
 };
+
+
+
 
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'shopbill_access_token',

@@ -12,6 +12,9 @@ export default function Products() {
 
   const [products, setProducts] = useState([]);
 
+  // Total product count from the List Products API
+  const [totalCount, setTotalCount] = useState(0);
+
   const [categories, setCategories] = useState([{ id: 'all', name: 'All' }]);
 
   const [activeCategory, setActiveCategory] = useState('All');
@@ -45,7 +48,11 @@ export default function Products() {
 
       console.log('[Products] Products count:', data.length);
 
+      console.log('[Products] API total count:', data.totalCount);
+
       setProducts(data);
+
+      setTotalCount(data.totalCount ?? data.length);
 
     } catch (error) {
 
@@ -54,6 +61,8 @@ export default function Products() {
       console.error('[Products] LOAD PRODUCTS ERROR:', error);
 
       setProducts([]);
+
+      setTotalCount(0);
 
     } finally {
 
@@ -132,19 +141,20 @@ export default function Products() {
 
   const getStock = (p) => Number(p.stock ?? p.stock_qty) || 0;
 
-  // Total stock for an option: "All" = every product, otherwise that category
-  const getTotalStock = (categoryName) => {
+  // Product count for an option:
+  // "All" = total product count from the API,
+  // otherwise number of products in that category
+  const getTotalCount = (categoryName) => {
 
-    const list =
-      categoryName === 'All'
-        ? products
-        : products.filter(
-            (p) =>
-              String(p.category || '').toLowerCase() ===
-              categoryName.toLowerCase()
-          );
+    if (categoryName === 'All') {
+      return totalCount;
+    }
 
-    return list.reduce((sum, p) => sum + getStock(p), 0);
+    return products.filter(
+      (p) =>
+        String(p.category || '').toLowerCase() ===
+        categoryName.toLowerCase()
+    ).length;
   };
 
 
@@ -349,7 +359,7 @@ export default function Products() {
           >
             {categories.map((c) => (
               <option key={c.id} value={c.name}>
-                {c.name} ({getTotalStock(c.name)})
+                {c.name} ({getTotalCount(c.name)})
               </option>
             ))}
           </select>

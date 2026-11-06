@@ -9,6 +9,7 @@ const navItems = [
   { to: '/employees', label: 'Employees', icon: '👥' },
   { to: '/history', label: 'History', icon: '🕒' },
   { to: '/collection', label: 'Collection', icon: '🗂️' },
+  { to: '/payment-collection', label: 'Payments', icon: '💰' },
   { to: '/profile', label: 'Profile', icon: '👤' },
 ];
 
