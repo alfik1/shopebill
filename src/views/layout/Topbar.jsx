@@ -8,6 +8,7 @@ const titles = {
   '/employees': 'Employees',
   '/history': 'History',
   '/collection': 'Collection',
+  '/expenses': 'Expenses',
   '/profile': 'Profile',
 };
 

@@ -60,6 +60,14 @@ export const API_ENDPOINTS = {
     COLLECTION: {
     LIST: `${BASE_URL}/api/mobile/collection/`,
   },
+ EXPENSES: {
+    CATEGORIES: `${BASE_URL}/api/mobile/expense-categories/`,
+    CATEGORY_DETAIL: (id) =>
+      `${BASE_URL}/api/mobile/expense-categories/${id}/`,
+    LIST: `${BASE_URL}/api/mobile/expenses/`,
+    DETAIL: (id) => `${BASE_URL}/api/mobile/expenses/${id}/`,
+    SUMMARY: `${BASE_URL}/api/mobile/expenses/summary/`,
+  },
 };
 
 

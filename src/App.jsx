@@ -11,6 +11,7 @@ import Employees from './views/pages/Employees';
 import History from './views/pages/History';
 import Collection from './views/pages/Collection';
 import PaymentCollection from './views/pages/PaymentCollection';
+import Expenses from './views/pages/Expenses';
 import Profile from './views/pages/Profile';
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="history" element={<History />} />
           <Route path="collection" element={<Collection />} />
           <Route path="payment-collection" element={<PaymentCollection />} />
+          <Route path="expenses" element={<Expenses />} />
           <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
