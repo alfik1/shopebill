@@ -7,6 +7,7 @@ import Home from './views/pages/Home';
 import Products from './views/pages/Products';
 import AddProduct from './views/pages/AddProduct';
 import Billing from './views/pages/Billing';
+import Exchange from './views/pages/Exchange';
 import Employees from './views/pages/Employees';
 import History from './views/pages/History';
 import Collection from './views/pages/Collection';
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="products" element={<Products />} />
           <Route path="add-product" element={<AddProduct />} />
           <Route path="billing" element={<Billing />} />
+          <Route path="exchange" element={<Exchange />} />
           <Route path="employees" element={<Employees />} />
           <Route path="history" element={<History />} />
           <Route path="collection" element={<Collection />} />

@@ -750,3 +750,92 @@ td { border-bottom: 1px solid var(--border); }
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- EXCHANGE PAGE ---------- */
+
+.exchange-page { width: 100%; min-width: 0; }
+
+.exchange-notice {
+  background: #FFF4E0;
+  color: #B26A00;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.exchange-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.exchange-scan { display: flex; gap: 8px; margin: 12px 0; }
+.exchange-scan .input { flex: 1; }
+
+.exchange-empty { color: #8A8A94; font-size: 13px; padding: 8px 0; }
+
+.exchange-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid #ECECEC;
+}
+
+.exchange-line-main { min-width: 0; flex: 1; }
+.exchange-sub { font-size: 12px; color: #8A8A94; margin-top: 2px; }
+.exchange-bad { color: #FF5C5C; font-weight: 700; }
+
+.exchange-qty { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.exchange-qty .btn { font-size: 12px; padding: 4px 10px; width: auto; }
+.exchange-remove { color: #FF5C5C; }
+
+.exchange-discount { display: flex; gap: 6px; margin-top: 8px; }
+.exchange-discount .input { width: 90px; font-size: 12px; padding: 6px 8px; }
+.exchange-discount .btn { font-size: 12px; padding: 4px 10px; width: auto; }
+
+.exchange-totals { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.exchange-totals > div { display: flex; justify-content: space-between; }
+.exchange-totals span { color: #8A8A94; }
+
+.exchange-diff {
+  border-top: 1px solid #ECECEC;
+  padding-top: 10px;
+  font-size: 16px;
+}
+.exchange-diff strong { font-size: 20px; }
+.exchange-diff.collect strong { color: #2FB380; }
+.exchange-diff.refund strong { color: #FF5C5C; }
+
+.exchange-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+
+.exchange-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #ECECEC;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.exchange-row:hover { border-color: #a9d61d; }
+.exchange-row.static { cursor: default; }
+.exchange-row.static:hover { border-color: #ECECEC; }
+
+@media (max-width: 900px) {
+  .exchange-columns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .exchange-line { flex-direction: column; }
+  .exchange-qty { align-self: flex-end; }
+}

@@ -68,6 +68,24 @@ export const API_ENDPOINTS = {
     DETAIL: (id) => `${BASE_URL}/api/mobile/expenses/${id}/`,
     SUMMARY: `${BASE_URL}/api/mobile/expenses/summary/`,
   },
+
+   EXCHANGES: {
+    LIST: `${BASE_URL}/api/exchanges/`,
+    DETAIL: (id) => `${BASE_URL}/api/exchanges/${id}/`,
+    SOURCE_BILLS: (search) =>
+      `${BASE_URL}/api/exchanges/source-bills/?search=${encodeURIComponent(search)}`,
+    SOURCE_BILL: (id) => `${BASE_URL}/api/exchanges/source-bills/${id}/`,
+    RETURN_SCAN: (id) => `${BASE_URL}/api/exchanges/${id}/returns/scan/`,
+    RETURN_ITEM: (id, itemId) =>
+      `${BASE_URL}/api/exchanges/${id}/returns/${itemId}/`,
+    REPLACEMENT_SCAN: (id) =>
+      `${BASE_URL}/api/exchanges/${id}/replacements/scan/`,
+    REPLACEMENT_ITEM: (id, itemId) =>
+      `${BASE_URL}/api/exchanges/${id}/replacements/${itemId}/`,
+    COMPLETE: (id) => `${BASE_URL}/api/exchanges/${id}/complete/`,
+    CANCEL: (id) => `${BASE_URL}/api/exchanges/${id}/cancel/`,
+    RECEIPT: (id) => `${BASE_URL}/api/exchanges/${id}/receipt.pdf`,
+  },
 };
 
 

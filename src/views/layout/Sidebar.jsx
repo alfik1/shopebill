@@ -6,6 +6,7 @@ const navItems = [
   { to: '/products', label: 'Products', icon: '📦' },
   { to: '/add-product', label: 'Add Product', icon: '➕' },
   { to: '/billing', label: 'Billing', icon: '🧾' },
+  { to: '/exchange', label: 'Exchange', icon: '🔄' },
   { to: '/employees', label: 'Employees', icon: '👥' },
   { to: '/history', label: 'History', icon: '🕒' },
   { to: '/collection', label: 'Collection', icon: '🗂️' },
